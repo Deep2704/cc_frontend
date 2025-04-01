@@ -1,0 +1,102 @@
+/* Register.module.css */
+.register {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-image: url('../../assets/background.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.9); /* Completely opaque */
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); /* Increased shadow depth */
+  width: 90%;
+  max-width: 400px; /* Adjust the width as needed */
+  margin: 0 auto; /* Center the form horizontally */
+}
+
+h1 {
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.registerInputContainer {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.registerLabel {
+  font-size: 14px;
+  color: #333;
+  text-align: left; /* Align label text to the left */
+}
+
+.registerInputField {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.emailInputWrapper,
+.verificationCodeWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.verifyEmailText,
+.verifyCodeText {
+  font-size: 12px;
+  color: #007acc;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.verificationMessage {
+  font-size: 12px;
+  color: #007acc;
+}
+
+.registerButton {
+  margin: 20px 0;
+  padding: 10px;
+  width: 100%;
+  max-width: 320px; /* Ensure the button width matches the input fields */
+  border: none;
+  border-radius: 5px;
+  background: #007bff;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.registerButton:hover {
+  background: #0056b3;
+}
+
+.newUser {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.newUser span {
+  font-size: 14px;
+}
+
+.signupButton {
+  margin-left: 5px;
+  color: #007acc;
+  text-decoration: none;
+  font-weight: bold;
+}

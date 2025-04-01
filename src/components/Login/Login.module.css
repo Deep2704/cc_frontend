@@ -1,0 +1,158 @@
+/* Login.module.css */
+.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url('../../assets/background.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+/*  background-color: rgba(255, 255, 255, 0.95);*/
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+h1 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.inputContainer {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #555;
+  text-align: left; /* Ensure label text is aligned to the left */
+}
+
+.inputField {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.inputField:focus {
+  border-color: #007bff;
+}
+
+.loginButton {
+  margin: 20px 0;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 5px;
+  background: #007bff;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.loginButton:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+}
+
+.loginButton:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.forgotPassword {
+  margin-top: 10px;
+  color: #007acc;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.newUser {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.newUser span {
+  font-size: 14px;
+}
+
+.signupButton {
+  margin-left: 5px;
+  color: #007acc;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.oauth {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.close-button {
+  align-self: flex-end;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #555;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.remember-me input {
+  margin-right: 10px;
+}
+
+/* Base.module.css */
+.button_common {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-align: center;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.button_common:hover {
+  transform: translateY(-2px);
+}
+
+.error {
+  color: #ff0000;
+  font-size: 12px;
+  margin-top: 5px;
+}
