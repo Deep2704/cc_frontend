@@ -64,31 +64,38 @@
   background-position: center;
   padding: 40px 20px;
   display: flex;
-  justify-content: center;
+  /* width: 900px; */
+  /* justify-content: center; */
 }
 
-.searchContainer {
+/* .searchContainer {
   max-width: 600px;
-  width: 100%;
+  width: 600%;
   border-radius: 10px;
   padding: 10px 20px;
   display: flex;
   align-items: center;
-}
+} */
 
 .searchForm {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
+  align-items:center;
+  justify-content: space-between;
+  width: 800%;
+  
+  background-color:whitesmoke;
+  border-radius: 50;
+  padding: 10;
 }
 
 .searchInput {
   flex: 1;
-  padding: 10px;
+  /* padding: 10px; */
   border: none;
   border-radius: 5px 0 0 5px;
   font-size: 16px;
+
+
 }
 
 .searchButton {
@@ -98,14 +105,16 @@
   padding: 10px;
   border-radius: 0 5px 5px 0;
   cursor: pointer;
+  /* padding: 10; */
+  /* padding-right: 10px; */
 }
 
-.booksSection {
+/* .booksSection {
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
   margin-top: 20px;
-}
+} */
 
 .booksList {
   display: flex;
@@ -202,4 +211,31 @@
   .bookItem {
     width: 100%;
   }
+}
+
+.searchContainer {
+padding-left: 10;
+justify-content: space-between;
+  
+}
+
+.searchInput {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 200px;
+}
+
+.searchButton {
+  background-color: #2a3f54;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.searchButton:hover {
+  background-color: #1a2a3a;
 }

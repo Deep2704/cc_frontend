@@ -4,92 +4,132 @@ import welcomeStyle from './Welcome.module.css';
 import { useNavigate } from 'react-router-dom';
 
 const Welcome = ({ user, setUserState }) => {
-  const [books, setBooks] = useState([]); // still called "books" to preserve structure
-  const [search, setSearch] = useState('');
+  const [albums, setAlbums] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [searchFields, setSearchFields] = useState({ title: '', artist: '', album: '', year: '' });
   const [loading, setLoading] = useState(true);
-  const [lastKey, setLastKey] = useState(null); // for pagination
+  const [lastKey, setLastKey] = useState(null);
+  const [showingSubscriptions, setShowingSubscriptions] = useState(false);
   const navigate = useNavigate();
-  const limit = 12; // items per page
+  const limit = 12;
 
-  // Load token and user data from localStorage on mount.
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
       setLoading(false);
       navigate('/login', { replace: true });
     } else {
-      // Load user data from localStorage if not provided.
       const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setUserState(JSON.parse(storedUser));
-      }
+      if (storedUser) setUserState(JSON.parse(storedUser));
       setLoading(false);
+      loadAlbums();
+      loadSubscriptions();
     }
   }, [navigate, setUserState]);
 
-  // Function to load paginated music entries from the /music endpoint.
-  const loadMusic = (lastEvaluatedKey = null) => {
+  const loadAlbums = (lastEvaluatedKey = null) => {
     const token = localStorage.getItem('token');
-    if (token) {
-      let url = `http://127.0.0.1:5000/music?limit=${limit}`;
-      if (lastEvaluatedKey) {
-        url += `&last_evaluated_key=${encodeURIComponent(JSON.stringify(lastEvaluatedKey))}`;
-      }
-      axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+    let url = `http://127.0.0.1:5000/music?limit=${limit}`;
+    if (lastEvaluatedKey) {
+      url += `&last_evaluated_key=${encodeURIComponent(JSON.stringify(lastEvaluatedKey))}`;
+    }
+    axios.get(url, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => {
-        // Ensure res.data.items is an array.
-        const newItems = res.data.items ? res.data.items : Array.isArray(res.data) ? res.data : [];
-        if (lastEvaluatedKey) {
-          setBooks(prev => [...prev, ...newItems]);
-        } else {
-          setBooks(newItems);
-        }
+        const newItems = res.data.items || [];
+        setAlbums(prev => lastEvaluatedKey ? [...prev, ...newItems] : newItems);
         setLastKey(res.data.lastEvaluatedKey);
       })
       .catch(err => {
         console.error(err);
         navigate('/login', { replace: true });
       });
-    } else {
-      navigate('/login', { replace: true });
-    }
   };
 
-  // Initial load on mount.
-  useEffect(() => {
-    loadMusic();
-  }, [navigate]);
-
-  // Handle search using the /music/query endpoint.
-  const searchHandler = (e) => {
-    e.preventDefault();
+  const loadSubscriptions = () => {
     const token = localStorage.getItem('token');
-    axios.get(`http://127.0.0.1:5000/music/query?title=${encodeURIComponent(search)}&limit=${limit}`, {
+    axios.get('http://127.0.0.1:5000/subscriptions', {
       headers: { Authorization: `Bearer ${token}` }
     })
-    .then(res => {
-      const newItems = res.data.items ? res.data.items : Array.isArray(res.data) ? res.data : [];
-      setBooks(newItems);
-      setLastKey(res.data.lastEvaluatedKey);
-    })
+    .then(res => setSubscriptions(res.data.albums || []))
     .catch(err => {
-      console.error(err);
+      console.error('Failed to load subscriptions:', err);
+      if (err.response?.status === 401) logout();
     });
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      searchHandler(e);
+  const handleSubscribe = (compositeId) => {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      console.error('❌ No token found in localStorage');
+      alert('Please log in again.');
+      navigate('/login', { replace: true });
+      return;
     }
+
+    if (!compositeId) {
+      console.error('❌ compositeId is missing');
+      alert('Invalid album selection.');
+      return;
+    }
+
+    const payload = { composite_id: compositeId };
+    console.log("📦 Sending to backend:", payload);
+
+    axios.post('http://127.0.0.1:5000/subscribe', payload, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(res => {
+      alert(res.data.message);
+      loadSubscriptions();
+    })
+    .catch(err => {
+      console.error('🔥 Subscribe toggle failed:', err.response?.data || err);
+      if (err.response?.status === 401) {
+        alert('Session expired. Please log in again.');
+        logout();
+      } else {
+        alert('Error updating subscription.');
+      }
+    });
   };
 
-  // Handler for "Load More" button.
-  const loadMoreHandler = () => {
-    if (lastKey) {
-      loadMusic(lastKey);
+  const isSubscribed = (compositeId) => {
+    return subscriptions.some(sub => sub.composite_id === compositeId);
+  };
+
+  const searchHandler = (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    let url = `http://127.0.0.1:5000/music/query`;
+    const searchParams = new URLSearchParams();
+
+    // Add search fields only if they are provided
+    if (searchFields.title.trim()) searchParams.append('title', searchFields.title);
+    if (searchFields.artist.trim()) searchParams.append('artist', searchFields.artist);
+    if (searchFields.album.trim()) searchParams.append('album', searchFields.album);
+    if (searchFields.year.trim()) searchParams.append('year', searchFields.year);
+
+    if ([...searchParams].length > 0) {
+      url += `?${searchParams.toString()}`;
     }
+    axios.get(url, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        setAlbums(res.data.items || res.data);
+        setLastKey(null);
+      })
+      .catch(err => console.error(err));
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') searchHandler(e);
+  };
+
+  const loadMoreHandler = () => {
+    if (lastKey) loadAlbums(lastKey);
   };
 
   const logout = () => {
@@ -99,9 +139,14 @@ const Welcome = ({ user, setUserState }) => {
     navigate('/login', { replace: true });
   };
 
-  if (loading) {
-    return <div className={welcomeStyle.loading}>Loading...</div>;
-  }
+  const handleToggleView = () => {
+    setShowingSubscriptions(prev => !prev);
+    if (!showingSubscriptions) loadSubscriptions();
+  };
+
+  const displayedAlbums = showingSubscriptions ? subscriptions : albums;
+
+  if (loading) return <div className={welcomeStyle.loading}>Loading...</div>;
 
   return (
     <div className={welcomeStyle.container}>
@@ -111,47 +156,72 @@ const Welcome = ({ user, setUserState }) => {
           <div className={welcomeStyle.userInfo}>
             <div className={welcomeStyle.userAvatar}></div>
             <div>
-              <p style={{ color: "white" }}>
-                {user && user.fname} {user && user.lname}
-              </p>
+              <p style={{ color: "white" }}>{user?.user_name}</p>
               <span>Online</span>
             </div>
           </div>
         </div>
         <nav className={welcomeStyle.nav}>
-          <button className={welcomeStyle.navItem} onClick={() => {}}>Books</button>
-          {/* Removed Add Book button */}
+          <button className={welcomeStyle.navItem} onClick={() => setShowingSubscriptions(false)}>Albums</button>
+          <button className={welcomeStyle.navItem} onClick={handleToggleView}>Subscriptions</button>
           <button className={welcomeStyle.navItem} onClick={logout}>Logout</button>
         </nav>
       </aside>
+
       <main className={welcomeStyle.mainContent}>
         <div className={welcomeStyle.searchSection}>
-          <form onSubmit={searchHandler} className={welcomeStyle.searchForm}>
+          {/* <div>hi</div> */}
+          <main onSubmit={searchHandler} className={welcomeStyle.searchForm}>
+         
             <div className={welcomeStyle.searchContainer}>
-              <i className="fas fa-search" style={{ margin: '0 5px', color: '#777' }}></i>
               <input
                 type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchFields.title}
+                onChange={(e) => setSearchFields({ ...searchFields, title: e.target.value })}
                 placeholder="Search by title"
-                onKeyPress={handleKeyPress}
+                className={welcomeStyle.searchInput}
+              />
+              <input
+                type="text"
+                value={searchFields.artist}
+                onChange={(e) => setSearchFields({ ...searchFields, artist: e.target.value })}
+                placeholder="Search by artist"
+                className={welcomeStyle.searchInput}
+              />
+              <input
+                type="text"
+                value={searchFields.album}
+                onChange={(e) => setSearchFields({ ...searchFields, album: e.target.value })}
+                placeholder="Search by album"
+                className={welcomeStyle.searchInput}
+              />
+              <input
+                type="text"
+                value={searchFields.year}
+                onChange={(e) => setSearchFields({ ...searchFields, year: e.target.value })}
+                placeholder="Search by year"
                 className={welcomeStyle.searchInput}
               />
               <button type="submit" className={welcomeStyle.searchButton}>Search</button>
             </div>
-          </form>
+          </main>
         </div>
         <section className={welcomeStyle.booksSection}>
           <div className={welcomeStyle.booksList}>
-            {(books || []).map(book => (
-              <div key={book.id} className={welcomeStyle.bookItem}>
-                <img src={book.img_url} alt={book.title} className={welcomeStyle.bookCover} />
+            {(displayedAlbums || []).map(album => (
+              <div key={album.composite_id} className={welcomeStyle.bookItem}>
+                <img src={album.img_url} alt={album.title} className={welcomeStyle.bookCover} />
                 <div className={welcomeStyle.bookDetails}>
-                  <h3>{book.title}</h3>
-                  <p>{book.author}</p>
-                  <a href={book.file_url} download className={welcomeStyle.downloadButton}>
-                    Download
-                  </a>
+                  <h3>{album.title}</h3>
+                  <p>{album.artist}</p>
+                  <p>{album.album}</p>
+                  <p>{album.year}</p>
+                  <button
+                    className={welcomeStyle.downloadButton}
+                    onClick={() => handleSubscribe(album.composite_id)}
+                  >
+                    {isSubscribed(album.composite_id) ? 'Unsubscribe' : 'Subscribe'}
+                  </button>
                 </div>
               </div>
             ))}
